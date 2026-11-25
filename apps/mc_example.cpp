@@ -3,6 +3,7 @@
 #include "monte_carlo.hpp"
 
 #include <cstdio>
+#include <initializer_list>  // for looping over {Call, Put}; GCC needs it explicitly
 
 using namespace optionpricer;
 

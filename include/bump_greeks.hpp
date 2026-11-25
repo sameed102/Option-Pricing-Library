@@ -15,9 +15,10 @@ struct Greeks {
     double vega;   // dV/dsigma, per 1.00 change in sigma (same units as bs_vega)
 };
 
-// Every repricing uses the same seed, so all of them see the same random numbers
-// (common random numbers). The seed is required: without it there is no CRN.
+// With common_random_numbers = true (the default), every repricing uses the same seed,
+// so all of them see the same random numbers. Set it to false to give each repricing
+// its own seed (seed, seed+1, ...). That exists only to show how much noisier it is.
 Greeks mc_greeks(OptionType type, const OptionParams& p, std::size_t n_paths,
-                 std::uint64_t seed);
+                 std::uint64_t seed, bool common_random_numbers = true);
 
 }  // namespace optionpricer

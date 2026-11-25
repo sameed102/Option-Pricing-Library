@@ -34,4 +34,9 @@ double bs_gamma(const OptionParams& p);
 // Divide by 100 to get the "per 1 vol point" number traders quote.
 double bs_vega(const OptionParams& p);
 
+// Implied volatility: the sigma at which bs_price equals `price`, found by Newton's method.
+// Throws if the price breaks the no-arbitrage bounds (then no sigma exists) or if
+// Newton does not converge.
+double implied_vol(OptionType type, double price, double S, double K, double r, double T);
+
 }  // namespace optionpricer

@@ -14,15 +14,18 @@ int main() {
     const std::uint64_t seed = 42;  // fixed so the CSV is the same on every run
     const double bs = bs_price(OptionType::Call, p);
 
-    // av_ columns: same number of paths, with antithetic variates.
+    // Same number of paths in every column group:
+    //   av_ = antithetic variates, cv_ = control variate (discounted stock price).
     std::printf("n_paths,mc_price,std_error,bs_price,abs_error,"
-                "av_price,av_std_error,av_abs_error\n");
+                "av_price,av_std_error,av_abs_error,cv_price,cv_std_error,cv_abs_error\n");
     for (std::size_t n = 1000; n <= 10000000; n *= 10) {
         const MCResult mc = mc_price(OptionType::Call, p, n, seed);
         const MCResult av = mc_price(OptionType::Call, p, n, seed, true);
-        std::printf("%zu,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f\n",
+        const MCResult cv = mc_price(OptionType::Call, p, n, seed, false, true);
+        std::printf("%zu,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f\n",
                     n, mc.price, mc.std_error, bs, std::fabs(mc.price - bs),
-                    av.price, av.std_error, std::fabs(av.price - bs));
+                    av.price, av.std_error, std::fabs(av.price - bs),
+                    cv.price, cv.std_error, std::fabs(cv.price - bs));
     }
     return 0;
 }

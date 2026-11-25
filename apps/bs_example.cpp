@@ -16,5 +16,10 @@ int main() {
     std::printf("%-6s %10.6f %10.6f %10.6f %10.6f\n", "put",
                 bs_price(OptionType::Put, p), bs_delta(OptionType::Put, p),
                 bs_gamma(p), bs_vega(p));
+
+    // Round trip: feed the call price back in and recover sigma.
+    const double iv = implied_vol(OptionType::Call, bs_price(OptionType::Call, p),
+                                  p.S, p.K, p.r, p.T);
+    std::printf("implied vol from the call price: %.10f\n", iv);
     return 0;
 }

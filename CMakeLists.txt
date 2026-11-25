@@ -13,7 +13,8 @@ endif()
 add_library(optionpricer
     src/black_scholes.cpp
     src/monte_carlo.cpp
-    src/bump_greeks.cpp)
+    src/bump_greeks.cpp
+    src/pathwise_greeks.cpp)
 target_include_directories(optionpricer PUBLIC include)
 target_compile_options(optionpricer PRIVATE -Wall -Wextra)
 
@@ -32,6 +33,10 @@ target_link_libraries(convergence PRIVATE optionpricer)
 # Step 5: bump-and-reprice Greeks vs analytic Greeks.
 add_executable(greeks_example apps/greeks_example.cpp)
 target_link_libraries(greeks_example PRIVATE optionpricer)
+
+# Asian (path-dependent) option demo.
+add_executable(asian_example apps/asian_example.cpp)
+target_link_libraries(asian_example PRIVATE optionpricer)
 
 # Step 6: unit tests, run with `ctest --test-dir build`.
 enable_testing()

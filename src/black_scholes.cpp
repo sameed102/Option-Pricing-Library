@@ -1,5 +1,6 @@
 #include "black_scholes.hpp"
 
+#include <algorithm>
 #include <cmath>
 #include <stdexcept>
 
@@ -65,6 +66,34 @@ double bs_gamma(const OptionParams& p) {
 double bs_vega(const OptionParams& p) {
     check(p);
     return p.S * norm_pdf(d1(p)) * std::sqrt(p.T);
+}
+
+double implied_vol(OptionType type, double price, double S, double K, double r, double T) {
+    // No-arbitrage bounds. The BS price rises with sigma from the lower bound
+    // (sigma -> 0) to the upper bound (sigma -> infinity), so a solution exists only
+    // strictly between them, and it is unique.
+    //   call: max(S - K e^{-rT}, 0) < C < S
+    //   put:  max(K e^{-rT} - S, 0) < P < K e^{-rT}
+    const double discK = K * std::exp(-r * T);
+    const double lower = (type == OptionType::Call) ? std::max(S - discK, 0.0)
+                                                    : std::max(discK - S, 0.0);
+    const double upper = (type == OptionType::Call) ? S : discK;
+    if (!(price > lower && price < upper))
+        throw std::invalid_argument("price is outside the no-arbitrage bounds");
+
+    // Newton's method on f(sigma) = bs_price(sigma) - price, whose derivative is vega:
+    //   sigma_new = sigma - f(sigma) / vega(sigma)
+    OptionParams p{S, K, r, 0.2, T};  // start from 20% vol
+    for (int i = 0; i < 100; ++i) {
+        const double diff = bs_price(type, p) - price;
+        if (std::fabs(diff) < 1e-12 * price)
+            return p.sigma;
+        const double next = p.sigma - diff / bs_vega(p);
+        // shortcut: a step that would make sigma negative halves it instead; fine for
+        // normal inputs, switch to a bracketed method (e.g. Brent) for extreme ones.
+        p.sigma = next > 0 ? next : 0.5 * p.sigma;
+    }
+    throw std::runtime_error("implied_vol: Newton's method did not converge");
 }
 
 }  // namespace optionpricer
