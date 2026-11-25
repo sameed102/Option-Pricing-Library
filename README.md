@@ -20,6 +20,7 @@ include/bump_greeks.hpp     Greeks, mc_greeks (bump-and-reprice)
 src/bump_greeks.cpp
 apps/convergence.cpp        Monte Carlo error at 1e3 ... 1e7 paths, as CSV
 apps/greeks_example.cpp     compares bump Greeks to analytic Greeks
+tests/test_main.cpp         unit tests, run through CTest
 ```
 
 ## Build and run
@@ -48,6 +49,12 @@ cmake --build build
 
 ```bash
 ./build/greeks_example
+```
+
+Run the unit tests (or run `./build/tests` to see every check):
+
+```bash
+ctest --test-dir build
 ```
 
 ## Formulas
@@ -164,8 +171,59 @@ put    vega      37.452576    37.524035     0.071459
 
 Every bump Greek is within 0.3% of its analytic value. The call and put gammas match exactly. On every path, call payoff minus put payoff is $S_T - K$, which is linear in $S$, so its second difference is zero.
 
+### Unit tests
+
+The tests run on three option setups: at the money (S=100, K=100, r=0.05, σ=0.20, T=1), in the money (S=110, K=100, r=0.03, σ=0.25, T=0.5) and out of the money (S=90, K=100, r=0.01, σ=0.30, T=2). There is no test framework. `check()` prints PASS or FAIL, and the program exits with 1 if any check fails.
+
+| Test | Tolerance |
+|---|---|
+| Black-Scholes put-call parity, $C - P = S - Ke^{-rT}$ | $10^{-10}$ |
+| MC price (plain and antithetic, 100,000 paths) vs Black-Scholes | 4 standard errors |
+| Bump delta, gamma and vega (1,000,000 paths) vs analytic | 1% of the analytic value |
+
+Output of `./build/tests`:
+
+```
+PASS  put-call parity                          got     4.877058  want     4.877058  tol 1.00e-10
+PASS  put-call parity                          got    11.488806  want    11.488806  tol 1.00e-10
+PASS  put-call parity                          got    -8.019867  want    -8.019867  tol 1.00e-10
+PASS  MC within 4 SE of BS                     got    10.512032  want    10.450584  tol 1.87e-01
+PASS  MC (antithetic) within 4 SE of BS        got    10.452037  want    10.450584  tol 1.31e-01
+PASS  MC within 4 SE of BS                     got     5.549716  want     5.573526  tol 1.09e-01
+PASS  MC (antithetic) within 4 SE of BS        got     5.576985  want     5.573526  tol 8.36e-02
+PASS  MC within 4 SE of BS                     got    14.531829  want    14.466961  tol 2.05e-01
+PASS  MC (antithetic) within 4 SE of BS        got    14.464656  want    14.466961  tol 1.11e-01
+PASS  MC within 4 SE of BS                     got     2.961002  want     2.978155  tol 7.79e-02
+PASS  MC (antithetic) within 4 SE of BS        got     2.977565  want     2.978155  tol 6.84e-02
+PASS  MC within 4 SE of BS                     got    12.243431  want    12.096951  tol 3.38e-01
+PASS  MC (antithetic) within 4 SE of BS        got    12.090534  want    12.096951  tol 2.97e-01
+PASS  MC within 4 SE of BS                     got    20.080236  want    20.116819  tol 2.56e-01
+PASS  MC (antithetic) within 4 SE of BS        got    20.119086  want    20.116819  tol 9.82e-02
+PASS  bump delta within 1%                     got     0.637532  want     0.636831  tol 6.37e-03
+PASS  bump gamma within 1%                     got     0.018825  want     0.018762  tol 1.88e-04
+PASS  bump vega within 1%                      got    37.630871  want    37.524035  tol 3.75e-01
+PASS  bump delta within 1%                     got    -0.362805  want    -0.363169  tol 3.63e-03
+PASS  bump gamma within 1%                     got     0.018825  want     0.018762  tol 1.88e-04
+PASS  bump vega within 1%                      got    37.452576  want    37.524035  tol 3.75e-01
+PASS  bump delta within 1%                     got     0.762406  want     0.761891  tol 7.62e-03
+PASS  bump gamma within 1%                     got     0.015791  want     0.015918  tol 1.59e-04
+PASS  bump vega within 1%                      got    24.160252  want    24.075953  tol 2.41e-01
+PASS  bump delta within 1%                     got    -0.237890  want    -0.238109  tol 2.38e-03
+PASS  bump gamma within 1%                     got     0.015791  want     0.015918  tol 1.59e-04
+PASS  bump vega within 1%                      got    24.023658  want    24.075953  tol 2.41e-01
+PASS  bump delta within 1%                     got     0.505330  want     0.504362  tol 5.04e-03
+PASS  bump gamma within 1%                     got     0.010404  want     0.010447  tol 1.04e-04
+PASS  bump vega within 1%                      got    50.982032  want    50.774027  tol 5.08e-01
+PASS  bump delta within 1%                     got    -0.495443  want    -0.495638  tol 4.96e-03
+PASS  bump gamma within 1%                     got     0.010404  want     0.010447  tol 1.04e-04
+PASS  bump vega within 1%                      got    50.708306  want    50.774027  tol 5.08e-01
+0 failure(s)
+```
+
+To check that the tests can fail, I broke the Monte Carlo drift in a scratch copy, using $rT$ instead of $(r - \tfrac{1}{2}\sigma^2)T$. That made 30 of the 33 checks fail. The 3 put-call parity checks still passed, because they test only Black-Scholes.
+
 ## Status
 
-Done: Black-Scholes prices and Greeks; the Monte Carlo pricer; the convergence study; antithetic variates; bump-and-reprice Greeks.
+Done: Black-Scholes prices and Greeks; the Monte Carlo pricer; the convergence study; antithetic variates; bump-and-reprice Greeks; unit tests.
 
-Planned: unit tests, and a matplotlib plot of error against path count.
+Planned: a matplotlib plot of error against path count.

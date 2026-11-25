@@ -32,3 +32,9 @@ target_link_libraries(convergence PRIVATE optionpricer)
 # Step 5: bump-and-reprice Greeks vs analytic Greeks.
 add_executable(greeks_example apps/greeks_example.cpp)
 target_link_libraries(greeks_example PRIVATE optionpricer)
+
+# Step 6: unit tests, run with `ctest --test-dir build`.
+enable_testing()
+add_executable(tests tests/test_main.cpp)
+target_link_libraries(tests PRIVATE optionpricer)
+add_test(NAME tests COMMAND tests)
