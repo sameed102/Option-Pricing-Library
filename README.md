@@ -21,6 +21,7 @@ src/bump_greeks.cpp
 apps/convergence.cpp        Monte Carlo error at 1e3 ... 1e7 paths, as CSV
 apps/greeks_example.cpp     compares bump Greeks to analytic Greeks
 tests/test_main.cpp         unit tests, run through CTest
+scripts/plot_convergence.py log-log plot of convergence.csv (Python, matplotlib)
 ```
 
 ## Build and run
@@ -55,6 +56,12 @@ Run the unit tests (or run `./build/tests` to see every check):
 
 ```bash
 ctest --test-dir build
+```
+
+Plot the convergence CSV (needs Python 3 with matplotlib):
+
+```bash
+python3 scripts/plot_convergence.py convergence.csv convergence.png
 ```
 
 ## Formulas
@@ -152,6 +159,10 @@ The `av_` columns use antithetic variates with the same number of paths.
 
 Antithetic variates cut the standard error by about 30% at every path count. A ratio of about 0.70 means the variance roughly halves ($0.70^2 \approx 0.49$), which matches doubling the number of plain paths at no extra cost.
 
+![Monte Carlo error vs number of paths, log-log](convergence.png)
+
+The lines are the standard errors. On log-log axes $s/\sqrt{n}$ is a straight line with slope $-\tfrac{1}{2}$, and the plain-MC SE falls from 0.491342 to 0.004655 over four decades, a slope of $-0.506$. The antithetic line runs parallel and lower: it has the same convergence rate, with a smaller constant. The points are the actual absolute errors. They scatter around the lines because each one is a single random draw.
+
 Each tenfold increase in paths cuts the standard error by about 3.2, close to $\sqrt{10} \approx 3.16$, as $\mathrm{SE} = s/\sqrt{n}$ predicts. The absolute error is noisier, but stays below 1.5 standard errors at every path count. Each run uses seed 42, so a smaller run's paths are the first paths of every larger run, and the errors in different rows are correlated.
 
 ### Bump-and-reprice Greeks
@@ -224,6 +235,4 @@ To check that the tests can fail, I broke the Monte Carlo drift in a scratch cop
 
 ## Status
 
-Done: Black-Scholes prices and Greeks; the Monte Carlo pricer; the convergence study; antithetic variates; bump-and-reprice Greeks; unit tests.
-
-Planned: a matplotlib plot of error against path count.
+Done: Black-Scholes prices and Greeks; the Monte Carlo pricer; the convergence study; antithetic variates; bump-and-reprice Greeks; unit tests; the convergence plot.
