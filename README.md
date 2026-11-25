@@ -16,6 +16,7 @@ include/monte_carlo.hpp     MCResult, mc_price
 src/monte_carlo.cpp
 apps/bs_example.cpp         prints Black-Scholes prices and Greeks for one option
 apps/mc_example.cpp         compares Monte Carlo to Black-Scholes for one option
+apps/convergence.cpp        Monte Carlo error at 1e3 ... 1e7 paths, as CSV
 ```
 
 ## Build and run
@@ -36,6 +37,10 @@ cmake --build build
 
 ```bash
 ./build/mc_example
+```
+
+```bash
+./build/convergence > convergence.csv
 ```
 
 ## Formulas
@@ -94,8 +99,23 @@ same seed twice gives same price: yes
 
 `z_score` is (MC price − BS price) / standard error. Both estimates land within 1.4 standard errors of the exact Black-Scholes price, as you would expect from sampling noise.
 
+### Convergence
+
+Output of `./build/convergence` (at-the-money call, seed 42, saved as `convergence.csv`):
+
+```
+n_paths,mc_price,std_error,bs_price,abs_error
+1000,10.778279,0.491342,10.450584,0.327695
+10000,10.629807,0.148182,10.450584,0.179223
+100000,10.512032,0.046856,10.450584,0.061449
+1000000,10.472343,0.014750,10.450584,0.021760
+10000000,10.450101,0.004655,10.450584,0.000482
+```
+
+Each tenfold increase in paths cuts the standard error by about 3.2, close to $\sqrt{10} \approx 3.16$, as $\mathrm{SE} = s/\sqrt{n}$ predicts. The absolute error is noisier, but stays below 1.5 standard errors at every path count. Each run uses seed 42, so a smaller run's paths are the first paths of every larger run, and the errors in different rows are correlated.
+
 ## Status
 
-Done: Black-Scholes prices and Greeks; the Monte Carlo pricer.
+Done: Black-Scholes prices and Greeks; the Monte Carlo pricer; the convergence study.
 
-Planned: a convergence study with CSV output, antithetic variates, bump-and-reprice Greeks with common random numbers, unit tests, and a matplotlib plot of error against path count.
+Planned: antithetic variates, bump-and-reprice Greeks with common random numbers, unit tests, and a matplotlib plot of error against path count.

@@ -23,3 +23,7 @@ target_link_libraries(bs_example PRIVATE optionpricer)
 # Step 2 demo: Monte Carlo vs Black-Scholes.
 add_executable(mc_example apps/mc_example.cpp)
 target_link_libraries(mc_example PRIVATE optionpricer)
+
+# Step 3: Monte Carlo convergence study, prints CSV.
+add_executable(convergence apps/convergence.cpp)
+target_link_libraries(convergence PRIVATE optionpricer)
