@@ -10,10 +10,16 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 # The library: all pricing code lives here.
-add_library(optionpricer src/black_scholes.cpp)
+add_library(optionpricer
+    src/black_scholes.cpp
+    src/monte_carlo.cpp)
 target_include_directories(optionpricer PUBLIC include)
 target_compile_options(optionpricer PRIVATE -Wall -Wextra)
 
 # Small demo program for step 1.
 add_executable(bs_example apps/bs_example.cpp)
 target_link_libraries(bs_example PRIVATE optionpricer)
+
+# Step 2 demo: Monte Carlo vs Black-Scholes.
+add_executable(mc_example apps/mc_example.cpp)
+target_link_libraries(mc_example PRIVATE optionpricer)
