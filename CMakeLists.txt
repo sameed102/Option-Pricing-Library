@@ -12,7 +12,8 @@ endif()
 # The library: all pricing code lives here.
 add_library(optionpricer
     src/black_scholes.cpp
-    src/monte_carlo.cpp)
+    src/monte_carlo.cpp
+    src/bump_greeks.cpp)
 target_include_directories(optionpricer PUBLIC include)
 target_compile_options(optionpricer PRIVATE -Wall -Wextra)
 
@@ -27,3 +28,7 @@ target_link_libraries(mc_example PRIVATE optionpricer)
 # Step 3: Monte Carlo convergence study, prints CSV.
 add_executable(convergence apps/convergence.cpp)
 target_link_libraries(convergence PRIVATE optionpricer)
+
+# Step 5: bump-and-reprice Greeks vs analytic Greeks.
+add_executable(greeks_example apps/greeks_example.cpp)
+target_link_libraries(greeks_example PRIVATE optionpricer)
