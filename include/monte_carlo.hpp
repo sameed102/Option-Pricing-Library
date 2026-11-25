@@ -17,7 +17,10 @@ struct MCResult {
 
 // Simulates n_paths terminal prices and averages the discounted payoffs.
 // Pass a seed to get the same answer every run; leave it empty for a random seed.
+// antithetic = true pairs each draw Z with -Z: n_paths/2 draws, n_paths paths in total
+// (n_paths must then be even), so both modes cost the same number of payoffs.
 MCResult mc_price(OptionType type, const OptionParams& p, std::size_t n_paths,
-                  std::optional<std::uint64_t> seed = std::nullopt);
+                  std::optional<std::uint64_t> seed = std::nullopt,
+                  bool antithetic = false);
 
 }  // namespace optionpricer
